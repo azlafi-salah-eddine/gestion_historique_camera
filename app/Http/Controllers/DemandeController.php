@@ -7,6 +7,7 @@ use App\Models\Demande;
 use App\Models\Employe;
 use App\Models\Concerne;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreDemandeRequest;
 use App\Http\Requests\UpdateDemandeRequest;
 use App\Http\Controllers\Api\UserrController as ApiUserrController;
@@ -31,7 +32,16 @@ class DemandeController extends Controller
 
     public function index()
     {
-        $demandes = $this->apiDemandeController->index()->original;
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            $demandes = Demande::latest('created_at')->get();
+        } else {
+            $demandes = Demande::where('id_u', $user->Id_u)
+                ->latest('created_at')
+                ->get();
+        }
+
         return view('demandes.index', ['demandes' => $demandes]);
     }
 
@@ -46,6 +56,10 @@ class DemandeController extends Controller
     public function store(StoreDemandeRequest $request)
     {
         $validatedData = $request->validated();
+
+        // Force ownership to authenticated user to prevent spoofing via hidden inputs.
+        $validatedData['id_u'] = Auth::user()->Id_u;
+
         try {
             $demande = Demande::create($validatedData);
 
@@ -73,6 +87,8 @@ class DemandeController extends Controller
         // Récupérer la demande par son ID avec ses relations chargées (concernes, employe, etc.)
         $demande = Demande::with(['concernes.camera', 'employe'])->findOrFail($id);
 
+        $this->authorizeDemandeAccess($demande);
+
         // Retourner la vue avec les données de la demande
         return view('demandes.show', compact('demande'));
     }
@@ -81,6 +97,8 @@ class DemandeController extends Controller
     {
         try {
             $demande = Demande::findOrFail($id);
+            $this->authorizeDemandeAccess($demande);
+
             $concernes = Concerne::where('Id_de', $id)->get();
             $employes = Employe::all();
             $cameras = Camera::all();
@@ -100,6 +118,10 @@ class DemandeController extends Controller
         try {
             // Récupérer la demande à mettre à jour
             $demande = Demande::findOrFail($id);
+            $this->authorizeDemandeAccess($demande);
+
+            // Keep ownership immutable from form submissions.
+            $validatedData['id_u'] = $demande->id_u;
 
             // Mettre à jour les champs de la demande
             $demande->update($validatedData);
@@ -133,6 +155,7 @@ class DemandeController extends Controller
         try {
             // Trouver la demande à supprimer
             $demande = Demande::findOrFail($id);
+            $this->authorizeDemandeAccess($demande);
 
             // Supprimer toutes les relations concernant cette demande
             Concerne::where('Id_de', $demande->Id_de)->delete();
@@ -146,6 +169,18 @@ class DemandeController extends Controller
         }
     }
 
+    private function authorizeDemandeAccess(Demande $demande): void
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            return;
+        }
+
+        if ((int) $demande->id_u !== (int) $user->Id_u) {
+            abort(403, 'Acces non autorise a cette demande.');
+        }
+    }
 
 
 }

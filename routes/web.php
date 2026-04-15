@@ -22,7 +22,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('entitesAffectation', EntiteAffectationController::class);
     });
 
-    Route::middleware(['role:user'])->group(function () {
+    Route::middleware(['role:admin,user'])->group(function () {
         Route::resource('demandes', DemandeController::class);
         Route::get('/demandes/{id}/pdf', [PDFController::class, 'downloadDemandePDF'])->name('demandes.pdf');
     });

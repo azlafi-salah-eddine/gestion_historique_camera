@@ -61,11 +61,13 @@ class UserrController extends Controller
             unset($validatedData['password']);
         }
 
-        // Si aucun rôle n'est fourni, utiliser "user" par défaut
-        $validatedData['role'] = $validatedData['role'] ?? 'user';
-
         try {
             $user = Userr::findOrFail($id);
+
+            if (!array_key_exists('role', $validatedData)) {
+                $validatedData['role'] = $user->role;
+            }
+
             $user->update($validatedData);
             return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour avec succès.');
         } catch (\Exception $e) {

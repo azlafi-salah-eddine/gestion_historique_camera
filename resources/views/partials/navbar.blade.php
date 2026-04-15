@@ -1,129 +1,138 @@
-<?php use Illuminate\Support\Facades\Auth; ?>
-
-<style>
-    /* Remove the default dropdown arrow */
-    .navbar-nav .dropdown-toggle::after {
-        display: none;
-    }
-</style>
-
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('photos/logo-MSISF.png') }}" style="height: 70px; width: auto;" alt="Logo">
-            </a>
-        </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('index') }}">Home</a>
-                </li>
-                @if (Auth::check() && Auth::user()->role == 'admin')
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="cameraDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Camera
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="cameraDropdown">
-                        <li><a class="dropdown-item" href="{{ route('cameras.index') }}">Liste</a></li>
-                        <li><a class="dropdown-item" href="{{ route('cameras.create') }}">Ajouter</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="employeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Employé
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="employeDropdown">
-                        <li><a class="dropdown-item" href="{{ route('employes.index') }}">Liste</a></li>
-                        <li><a class="dropdown-item" href="{{ route('employes.create') }}">Ajouter</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="usersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Utilisateurs
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="usersDropdown">
-                        <li><a class="dropdown-item" href="{{ route('users.index') }}">Liste</a></li>
-                        <li><a class="dropdown-item" href="{{ route('users.create') }}">Ajouter</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="entiteDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Entité Affectation
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="entiteDropdown">
-                        <li><a class="dropdown-item" href="{{ route('entitesAffectation.index') }}">Liste</a></li>
-                        <li><a class="dropdown-item" href="{{ route('entitesAffectation.create') }}">Ajouter</a></li>
-                    </ul>
-                </li>
-                @endif
-                @if (Auth::check() && Auth::user()->role == 'user')
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="demandeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Demande
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="demandeDropdown">
-                        <li><a class="dropdown-item" href="{{ route('demandes.index') }}">Liste</a></li>
-                        <li><a class="dropdown-item" href="{{ route('demandes.create') }}">Ajouter</a></li>
-                    </ul>
-                </li>
-                @endif
-            </ul>
-        </div>
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ asset('photos/Profile-Avatar-PNG.png') }}" class="rounded-circle" style="width: 30px;" alt="user photo">
+﻿<nav class="bg-white shadow relative z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('index') }}" class="flex items-center">
+                    <img class="h-10 w-auto" src="{{ asset('photos/logo-MSISF.png') }}" alt="Logo">
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    @if (auth()->check())
-                        <li class="dropdown-item">
-                            <span>{{ Auth::user()->Nom_u }}</span>
-                            <br>
-                            <span>{{ Auth::user()->username }}</span>
-                        </li>
-                        <li><a class="dropdown-item" href="{{ route('users.edit', Auth::user()->Id_u) }}">Settings</a></li>
-                        <li>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                @csrf
-                            </form>
-                            <a class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        </li>
-                    @else
-                        <li><a class="dropdown-item" href="{{ route('login') }}">Login</a></li>
+
+                <div class="hidden sm:flex sm:space-x-6 sm:ml-6 items-center">
+                    <a href="{{ route('index') }}" class="text-gray-600 hover:text-blue-700 text-sm font-medium">Accueil</a>
+
+                    @if(Auth::check() && Auth::user()->role == 'admin')
+                    <div class="relative">
+                        <button type="button" data-dropdown-trigger="admin-menu" class="text-gray-600 hover:text-blue-700 text-sm font-medium inline-flex items-center gap-2">
+                            Administration
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="admin-menu" data-dropdown-menu class="hidden absolute left-0 mt-2 w-56 bg-white border rounded-xl shadow-lg py-2">
+                            <a href="{{ route('cameras.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Caméras</a>
+                            <a href="{{ route('employes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Employés</a>
+                            <a href="{{ route('users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Utilisateurs</a>
+                            <a href="{{ route('entitesAffectation.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Entités Affectation</a>
+                            <a href="{{ route('demandes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Demandes</a>
+                        </div>
+                    </div>
                     @endif
-                </ul>
-            </li>
-        </ul>
+
+                    @if(Auth::check() && Auth::user()->role == 'user')
+                    <div class="relative">
+                        <button type="button" data-dropdown-trigger="demande-menu" class="text-gray-600 hover:text-blue-700 text-sm font-medium inline-flex items-center gap-2">
+                            Demande
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="demande-menu" data-dropdown-menu class="hidden absolute left-0 mt-2 w-48 bg-white border rounded-xl shadow-lg py-2">
+                            <a href="{{ route('demandes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Liste</a>
+                            <a href="{{ route('demandes.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ajouter</a>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                @auth
+                <div class="relative hidden sm:block">
+                    <button type="button" data-dropdown-trigger="profile-menu" class="bg-white rounded-full flex text-sm items-center border border-gray-200 px-2 py-1">
+                        <img class="h-8 w-8 rounded-full" src="{{ asset('photos/Profile-Avatar-PNG.png') }}" alt="">
+                        <span class="ml-2 font-medium text-gray-700">{{ Auth::user()->Nom_u }}</span>
+                        <i class="fa-solid fa-chevron-down ml-2 text-gray-400 text-xs"></i>
+                    </button>
+                    <div id="profile-menu" data-dropdown-menu class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg py-1 bg-white border">
+                        <div class="px-4 py-2 border-b text-sm">
+                            <div class="font-medium text-gray-800">{{ Auth::user()->Nom_u }} {{ Auth::user()->Prenom_u }}</div>
+                            <div class="text-gray-500 text-xs mt-1">{{ Auth::user()->username }}</div>
+                        </div>
+                        @if(Auth::user()->role === 'admin')
+                        <a href="{{ route('users.edit', Auth::user()->Id_u) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-gear mr-2"></i> Paramètres</a>
+                        @else
+                        <a href="{{ route('demandes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-list mr-2"></i> Mes demandes</a>
+                        @endif
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+                        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fa-solid fa-right-from-bracket mr-2"></i> Déconnexion</a>
+                    </div>
+                </div>
+                @else
+                <a href="{{ route('login') }}" class="hidden sm:inline-flex text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">Connexion</a>
+                @endauth
+
+                <button type="button" id="mobile-menu-trigger" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:bg-gray-100">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden sm:hidden border-t bg-white">
+        <div class="px-4 py-3 space-y-2">
+            <a href="{{ route('index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Accueil</a>
+
+            @if(Auth::check() && Auth::user()->role == 'admin')
+            <a href="{{ route('cameras.index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Caméras</a>
+            <a href="{{ route('employes.index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Employés</a>
+            <a href="{{ route('users.index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Utilisateurs</a>
+            <a href="{{ route('entitesAffectation.index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Entités Affectation</a>
+            @endif
+
+            @if(Auth::check())
+            <a href="{{ route('demandes.index') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Demandes</a>
+            @endif
+
+            @auth
+            <div class="border-t pt-2 mt-2">
+                <p class="px-2 text-xs text-gray-500 mb-1">{{ Auth::user()->Nom_u }} {{ Auth::user()->Prenom_u }}</p>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="block px-2 py-2 rounded text-sm text-red-600 hover:bg-red-50">Déconnexion</a>
+            </div>
+            @else
+            <a href="{{ route('login') }}" class="block px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100">Connexion</a>
+            @endauth
+        </div>
     </div>
 </nav>
 
 <script>
-    // Toggle dropdown menu
-    document.getElementById('user-menu-button').addEventListener('click', function() {
-        document.getElementById('user-dropdown').classList.toggle('hidden');
-    });
+    (function () {
+        const triggers = document.querySelectorAll('[data-dropdown-trigger]');
+        const menus = document.querySelectorAll('[data-dropdown-menu]');
 
-    // Toggle camera dropdown
-    document.getElementById('camera-menu-button').addEventListener('click', function() {
-        document.getElementById('camera-dropdown').classList.toggle('hidden');
-    });
+        function closeAll() {
+            menus.forEach(menu => menu.classList.add('hidden'));
+        }
 
-    // Toggle employe dropdown
-    document.getElementById('employe-menu-button').addEventListener('click', function() {
-        document.getElementById('employe-dropdown').classList.toggle('hidden');
-    });
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', function (event) {
+                event.stopPropagation();
+                const menuId = trigger.getAttribute('data-dropdown-trigger');
+                const menu = document.getElementById(menuId);
+                const isHidden = menu.classList.contains('hidden');
+                closeAll();
+                if (isHidden) {
+                    menu.classList.remove('hidden');
+                }
+            });
+        });
 
-    // Toggle entite dropdown
-    document.getElementById('entite-menu-button').addEventListener('click', function() {
-        document.getElementById('entite-dropdown').classList.toggle('hidden');
-    });
+        document.addEventListener('click', function () {
+            closeAll();
+        });
 
-    // Toggle demande dropdown
-    document.getElementById('demande-menu-button').addEventListener('click', function() {
-        document.getElementById('demande-dropdown').classList.toggle('hidden');
-    });
+        const mobileTrigger = document.getElementById('mobile-menu-trigger');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileTrigger && mobileMenu) {
+            mobileTrigger.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    })();
 </script>

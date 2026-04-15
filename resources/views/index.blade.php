@@ -1,321 +1,243 @@
 @extends('layouts.app')
 
-@section('title', 'Accueil')
+@section('title', 'Tableau de bord')
 
 @section('main')
-<!DOCTYPE html>
-<head>
+<section class="space-y-6">
+    <div class="bg-white rounded-3 shadow-sm border p-4 p-md-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h1 class="h3 mb-1 fw-bold text-dark">Tableau de bord {{ $user->role === 'admin' ? 'Administrateur' : 'Utilisateur' }}</h1>
+                <p class="text-secondary mb-0">Bienvenue {{ $user->Nom_u }} {{ $user->Prenom_u }}. Voici une vue claire de votre activite.</p>
+            </div>
+            <span class="badge text-bg-{{ $user->role === 'admin' ? 'primary' : 'success' }} fs-6 px-3 py-2 text-uppercase">
+                {{ $user->role }}
+            </span>
+        </div>
+    </div>
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/> <!--Replace with your tailwind.css once created-->
-    <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet"> <!--Totally optional :) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
-</head>
-<main>
-    <div class="flex flex-col md:flex-row">
-        <section>
-            <div id="main" class="main-content flex-1 bg-gray-100 ">
-
-                <div class="bg-gray-100 ">
-                    <div class="rounded bg-gradient-to-r from-blue-600 to-gray-100 p-4 shadow text-2xl text-white">
-                        <h1 class="font-bold pl-2">Admin Dashboard</h1>
+    @if($user->role === 'admin')
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Cameras</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $totalCameras }}</h2>
                     </div>
-                </div>
-
-                <div class="flex flex-wrap">
-                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                        <!--Metric Card-->
-                        <div class="bg-gradient-to-b from-blue-200 to-blue-100 border-b-4 border-blue-500 rounded-lg shadow-xl p-5">
-                            <div class="flex flex-row items-center">
-                                <div class="flex-shrink pr-4">
-                                    <div class="rounded-full p-5 bg-blue-600">
-                                        <img src="{{ asset('photos/security-camera.png') }}" style="height: 34px">
-                                    </div>
-                                </div>
-                                <div class="flex-1 text-right md:text-center">
-                                    <h2 class="font-bold uppercase text-gray-600">Camera</h2>
-                                    <p class="font-bold text-3xl">{{ $totalCameras }}<span class="text-blue-500"><i class="fas fa-caret-up"></i></span></p>
-                                </div>
-                            </div>
-                        </div>
-                        <!--/Metric Card-->
-                    </div>
-                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                        <!--Metric Card-->
-                        <div class="bg-gradient-to-b from-indigo-200 to-indigo-100 border-b-4 border-indigo-500 rounded-lg shadow-xl p-5">
-                            <div class="flex flex-row items-center">
-                                <div class="flex-shrink pr-4">
-                                    <div class="rounded-full p-5 bg-indigo-600">
-                                        <img src="{{ asset('photos/employee.png') }}" style="height: 34px">
-                                    </div>
-                                </div>
-                                <div class="flex-1 text-right md:text-center">
-                                    <h2 class="font-bold uppercase text-gray-600">Employés</h2>
-                                    <p class="font-bold text-3xl">{{ $totalEmployees }}<span class="text-indigo-500"><i class="fas fa-caret-up"></i></span></p>
-                                </div>
-                            </div>
-                        </div>
-                        <!--/Metric Card-->
-                    </div>
-                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                        <!--Metric Card-->
-                        <div class="bg-gradient-to-b from-red-200 to-red-100 border-b-4 border-red-500 rounded-lg shadow-xl p-5">
-                            <div class="flex flex-row items-center">
-                                <div class="flex-shrink pr-4">
-                                    <div class="rounded-full p-5 bg-red-600">
-                                        <img src="{{ asset('photos/demande.png') }}" style="height: 34px">
-                                    </div>
-                                </div>
-                                <div class="flex-1 text-right md:text-center">
-                                    <h2 class="font-bold uppercase text-gray-600">Demande</h2>
-                                    <p class="font-bold text-3xl">{{ $totalDemandes }}<span class="text-red-500"><i class="fas fa-caret-up"></i></span></p>
-                                </div>
-                            </div>
-                        </div>
-                        <!--/Metric Card-->
-                    </div>
-                </div>
-                
-
-
-                <div class="flex flex-row flex-wrap flex-grow mt-2">
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Graph Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h class="font-bold uppercase text-gray-600">Graph</h>
-                            </div>
-                            <div class="p-5">
-                                <canvas id="chartjs-7" class="chartjs" width="undefined" height="undefined"></canvas>
-                                <script>
-                                    new Chart(document.getElementById("chartjs-7"), {
-                                        "type": "bar",
-                                        "data": {
-                                            "labels": ["January", "February", "March", "April"],
-                                            "datasets": [{
-                                                "label": "Page Impressions",
-                                                "data": [10, 20, 30, 40],
-                                                "borderColor": "rgb(255, 99, 132)",
-                                                "backgroundColor": "rgba(255, 99, 132, 0.2)"
-                                            }, {
-                                                "label": "Adsense Clicks",
-                                                "data": [5, 15, 10, 30],
-                                                "type": "line",
-                                                "fill": false,
-                                                "borderColor": "rgb(54, 162, 235)"
-                                            }]
-                                        },
-                                        "options": {
-                                            "scales": {
-                                                "yAxes": [{
-                                                    "ticks": {
-                                                        "beginAtZero": true
-                                                    }
-                                                }]
-                                            }
-                                        }
-                                    });
-                                </script>
-                            </div>
-                        </div>
-                        <!--/Graph Card-->
-                    </div>
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Graph Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h2 class="font-bold uppercase text-gray-600">Graph</h2>
-                            </div>
-                            <div class="p-5">
-                                <canvas id="chartjs-0" class="chartjs" width="undefined" height="undefined"></canvas>
-                                <script>
-                                    new Chart(document.getElementById("chartjs-0"), {
-                                        "type": "line",
-                                        "data": {
-                                            "labels": ["January", "February", "March", "April", "May", "June", "July"],
-                                            "datasets": [{
-                                                "label": "Views",
-                                                "data": [65, 59, 80, 81, 56, 55, 40],
-                                                "fill": false,
-                                                "borderColor": "rgb(75, 192, 192)",
-                                                "lineTension": 0.1
-                                            }]
-                                        },
-                                        "options": {}
-                                    });
-                                </script>
-                            </div>
-                        </div>
-                        <!--/Graph Card-->
-                    </div>
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Graph Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h2 class="font-bold uppercase text-gray-600">Graph</h2>
-                            </div>
-                            <div class="p-5">
-                                <canvas id="chartjs-1" class="chartjs" width="undefined" height="undefined"></canvas>
-                                <script>
-                                    new Chart(document.getElementById("chartjs-1"), {
-                                        "type": "bar",
-                                        "data": {
-                                            "labels": ["January", "February", "March", "April", "May", "June", "July"],
-                                            "datasets": [{
-                                                "label": "Likes",
-                                                "data": [65, 59, 80, 81, 56, 55, 40],
-                                                "fill": false,
-                                                "backgroundColor": ["rgba(255, 99, 132, 0.2)", "rgba(255, 159, 64, 0.2)", "rgba(255, 205, 86, 0.2)", "rgba(75, 192, 192, 0.2)", "rgba(54, 162, 235, 0.2)", "rgba(153, 102, 255, 0.2)", "rgba(201, 203, 207, 0.2)"],
-                                                "borderColor": ["rgb(255, 99, 132)", "rgb(255, 159, 64)", "rgb(255, 205, 86)", "rgb(75, 192, 192)", "rgb(54, 162, 235)", "rgb(153, 102, 255)", "rgb(201, 203, 207)"],
-                                                "borderWidth": 1
-                                            }]
-                                        },
-                                        "options": {
-                                            "scales": {
-                                                "yAxes": [{
-                                                    "ticks": {
-                                                        "beginAtZero": true
-                                                    }
-                                                }]
-                                            }
-                                        }
-                                    });
-                                </script>
-                            </div>
-                        </div>
-                        <!--/Graph Card-->
-                    </div>
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Graph Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h5 class="font-bold uppercase text-gray-600">Graph</h5>
-                            </div>
-                            <div class="p-5"><canvas id="chartjs-4" class="chartjs" width="undefined" height="undefined"></canvas>
-                                <script>
-                                    new Chart(document.getElementById("chartjs-4"), {
-                                        "type": "doughnut",
-                                        "data": {
-                                            "labels": ["P1", "P2", "P3"],
-                                            "datasets": [{
-                                                "label": "Issues",
-                                                "data": [300, 50, 100],
-                                                "backgroundColor": ["rgb(255, 99, 132)", "rgb(54, 162, 235)", "rgb(255, 205, 86)"]
-                                            }]
-                                        }
-                                    });
-                                </script>
-                            </div>
-                        </div>
-                        <!--/Graph Card-->
-                    </div>
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Table Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h2 class="font-bold uppercase text-gray-600">Graph</h2>
-                            </div>
-                            <div class="p-5">
-                                <table class="w-full p-5 text-gray-700">
-                                    <thead>
-                                    <tr>
-                                        <th class="text-left text-blue-900">Name</th>
-                                        <th class="text-left text-blue-900">Side</th>
-                                        <th class="text-left text-blue-900">Role</th>
-                                    </tr>
-                                    </thead>
-
-                                    <tbody>
-                                    <tr>
-                                        <td>Obi Wan Kenobi</td>
-                                        <td>Light</td>
-                                        <td>Jedi</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Greedo</td>
-                                        <td>South</td>
-                                        <td>Scumbag</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Darth Vader</td>
-                                        <td>Dark</td>
-                                        <td>Sith</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-
-                                <p class="py-2"><a href="#">See More issues...</a></p>
-
-                            </div>
-                        </div>
-                        <!--/table Card-->
-                    </div>
-
-                    <div class="w-full md:w-1/2 xl:w-1/2 p-6">
-                        <!--Advert Card-->
-                        <div class="bg-white border-transparent rounded-lg shadow-xl">
-                            <div class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
-                                <h2 class="font-bold uppercase text-gray-600">Advert</h2>
-                            </div>
-                            <div class="p-5 text-center">
-
-
-                                <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=CK7D52JJ&placement=wwwtailwindtoolboxcom" id="_carbonads_js"></script>
-
-
-                            </div>
-                        </div>
-                        <!--/Advert Card-->
-                    </div>
-
-
                 </div>
             </div>
-        </section>
-    </div>
-</main>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Employes</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $totalEmployees }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Demandes</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $totalDemandes }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Utilisateurs (admin/user)</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $totalAdmins }} / {{ $totalUsers }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="row g-3">
+            <div class="col-12 col-xl-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h3 class="h5 mb-0 fw-semibold">Dernieres demandes</h3>
+                    </div>
+                    <div class="card-body pt-2">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Objet</th>
+                                        <th>Employe</th>
+                                        <th>Demandeur</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($recentDemandes as $demande)
+                                        <tr>
+                                            <td>#{{ $demande->Id_de }}</td>
+                                            <td>{{ $demande->Objet }}</td>
+                                            <td>{{ optional($demande->employe)->Nom_emp }} {{ optional($demande->employe)->Prenom_emp }}</td>
+                                            <td>{{ optional($demande->userr)->Nom_u }} {{ optional($demande->userr)->Prenom_u }}</td>
+                                            <td>{{ optional($demande->created_at)->format('d/m/Y') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-secondary">Aucune demande disponible.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="col-12 col-xl-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h3 class="h5 mb-0 fw-semibold">Evolution des demandes (6 mois)</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas
+                            id="adminDemandesChart"
+                            height="220"
+                            data-labels='@json($chartLabels ?? [])'
+                            data-values='@json($chartData ?? [])'
+                        ></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Mes demandes</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $myTotalDemandes }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Demandes sauvegardees</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $mySavedDemandes }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Ce mois-ci</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $myDemandesThisMonth }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-2">Cameras concernees</p>
+                        <h2 class="h3 mb-0 fw-bold">{{ $myCamerasCount }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="row g-3">
+            <div class="col-12 col-xl-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h3 class="h5 mb-0 fw-semibold">Mes dernieres demandes</h3>
+                    </div>
+                    <div class="card-body pt-2">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Objet</th>
+                                        <th>Employe</th>
+                                        <th>Date operation</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($myRecentDemandes as $demande)
+                                        <tr>
+                                            <td>#{{ $demande->Id_de }}</td>
+                                            <td>{{ $demande->Objet }}</td>
+                                            <td>{{ optional($demande->employe)->Nom_emp }} {{ optional($demande->employe)->Prenom_emp }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($demande->Date_operation)->format('d/m/Y H:i') }}</td>
+                                            <td>
+                                                <a href="{{ route('demandes.show', $demande->Id_de) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-secondary">Aucune demande disponible.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="col-12 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h3 class="h5 mb-0 fw-semibold">Actions rapides</h3>
+                    </div>
+                    <div class="card-body d-grid gap-2">
+                        <a href="{{ route('demandes.create') }}" class="btn btn-primary">Nouvelle demande</a>
+                        <a href="{{ route('demandes.index') }}" class="btn btn-outline-secondary">Voir toutes mes demandes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+</section>
+
+@if($user->role === 'admin')
 <script>
-    /*Toggle dropdown list*/
-    function toggleDD(myDropMenu) {
-        document.getElementById(myDropMenu).classList.toggle("invisible");
-    }
-    /*Filter dropdown options*/
-    function filterDD(myDropMenu, myDropMenuSearch) {
-        var input, filter, ul, li, a, i;
-        input = document.getElementById(myDropMenuSearch);
-        filter = input.value.toUpperCase();
-        div = document.getElementById(myDropMenu);
-        a = div.getElementsByTagName("a");
-        for (i = 0; i < a.length; i++) {
-            if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
-                a[i].style.display = "";
-            } else {
-                a[i].style.display = "none";
-            }
-        }
-    }
-    // Close the dropdown menu if the user clicks outside of it
-    window.onclick = function(event) {
-        if (!event.target.matches('.drop-button') && !event.target.matches('.drop-search')) {
-            var dropdowns = document.getElementsByClassName("dropdownlist");
-            for (var i = 0; i < dropdowns.length; i++) {
-                var openDropdown = dropdowns[i];
-                if (!openDropdown.classList.contains('invisible')) {
-                    openDropdown.classList.add('invisible');
+    const ctx = document.getElementById('adminDemandesChart');
+
+    if (ctx) {
+        const labels = JSON.parse(ctx.dataset.labels || '[]');
+        const data = JSON.parse(ctx.dataset.values || '[]');
+
+        if (labels.length) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Demandes',
+                        data: data,
+                        borderColor: 'rgb(37, 99, 235)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0
+                            }
+                        }]
+                    }
                 }
-            }
+            });
         }
     }
 </script>
-
-
+@endif
 @endsection
